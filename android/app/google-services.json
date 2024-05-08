@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "206492858709",
+    "firebase_url": "https://warnakita-db-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "warnakita-db",
+    "storage_bucket": "warnakita-db.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:206492858709:android:f2746bd18c1623e98a17dc",
+        "android_client_info": {
+          "package_name": "com.example.warnakita"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "206492858709-ik1k7ip0g0olmm4d06f95ue3nkh7j9ob.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB36werj8MF95kvBID2sXvWa7kl6gQtlVs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "206492858709-ik1k7ip0g0olmm4d06f95ue3nkh7j9ob.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
