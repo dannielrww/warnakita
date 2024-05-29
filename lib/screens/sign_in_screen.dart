@@ -4,14 +4,6 @@ import 'package:warnakita/screens/home_screen.dart';
 import 'package:warnakita/screens/sign_up_screen.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-final googleSignIn = GoogleSignIn(
-  scopes: [
-    'email',
-  ],
-  clientId:
-      '206492858709-ik1k7ip0g0olmm4d06f95ue3nkh7j9ob.apps.googleusercontent.com',
-);
-
 class SignInScreen extends StatefulWidget {
   const SignInScreen({Key? key});
 
@@ -24,42 +16,50 @@ class SignInScreenState extends State<SignInScreen> {
   final _passwordController = TextEditingController();
   String _errorMessage = '';
 
-  Future<void> _signInWIthGoogle() async {
+  ValueNotifier userCredential = ValueNotifier('');
+
+  Future<dynamic> signInWithGoogle() async {
     try {
-      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      if (googleUser != null) {
-        final GoogleSignInAuthentication googleAuth =
-            await googleUser.authentication;
-        final credential = GoogleAuthProvider.credential(
-          accessToken: googleAuth.accessToken,
-          idToken: googleAuth.idToken,
-        );
-        await FirebaseAuth.instance.signInWithCredential(credential);
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        );
-      }
-    } catch (error) {
-      setState(() {
-        _errorMessage = error.toString();
-      });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(_errorMessage),
-      ));
+      final GoogleSignInAccount? googleUser = await GoogleSignIn(
+        scopes: [
+          'email',
+        ],
+        clientId:
+            '206492858709-ik1k7ip0g0olmm4d06f95ue3nkh7j9ob.apps.googleusercontent.com', // WEB CLIENT ID
+      ).signIn();
+
+      final GoogleSignInAuthentication? googleAuth =
+          await googleUser?.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth?.accessToken,
+        idToken: googleAuth?.idToken,
+      );
+
+      return await FirebaseAuth.instance.signInWithCredential(credential);
+    } on Exception catch (e) {
+      // TODO
+      print('exception->$e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xFFC58BF2),
       appBar: AppBar(
-        title: const Text('Sign In'),
+        title: const Text('LOGIN'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
             children: [
+              Image.asset(
+                'assets/Warna_Kita.png', // Ganti dengan path logo Anda
+                width: 200.0,
+                height: 200.0,
+              ),
               const SizedBox(height: 32.0),
               TextField(
                 controller: _emailController,
@@ -79,41 +79,11 @@ class SignInScreenState extends State<SignInScreen> {
               ),
               const SizedBox(height: 16.0),
               ElevatedButton(
-                onPressed: () async {
-                  try {
-                    await FirebaseAuth.instance.signInWithEmailAndPassword(
-                      email: _emailController.text,
-                      password: _passwordController.text,
-                    );
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(
-                          builder: (context) => const HomeScreen()),
-                    );
-                  } catch (error) {
-                    setState(() {
-                      _errorMessage = error.toString();
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(_errorMessage),
-                      ),
-                    );
-                  }
-                },
-                child: const Text('Sign In'),
-              ),
-              const SizedBox(height: 16.0),
-              ElevatedButton.icon(
-                  onPressed: _signInWIthGoogle,
-                  icon: Image.asset('assets/images/icongoogle.png'),
-                  label: const Text(
-                    'Sign In with Google',
-                  )),
-              ElevatedButton(
+                style: ElevatedButton.styleFrom(elevation: 5),
                 onPressed: () async {
                   final email = _emailController.text.trim();
                   final password = _passwordController.text;
-                  // Validasi email
+// Validasi email
                   if (email.isEmpty || !isValidEmail(email)) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -121,24 +91,13 @@ class SignInScreenState extends State<SignInScreen> {
                     );
                     return;
                   }
-                  // Validasi password
-                  if (password.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text('Please enter your password')),
-                    );
-                    return;
-                  }
                   try {
-                    // Lakukan sign in dengan email dan password
                     await FirebaseAuth.instance.signInWithEmailAndPassword(
-                      email: email,
-                      password: password,
+                      email: _emailController.text,
+                      password: _passwordController.text,
                     );
-                    // Jika berhasil sign in, navigasi ke halaman beranda
                     Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(
-                          builder: (context) => const HomeScreen()),
+                      MaterialPageRoute(builder: (context) => HomeScreen()),
                     );
                   } on FirebaseAuthException catch (error) {
                     print('Error code: ${error.code}');
@@ -167,6 +126,7 @@ class SignInScreenState extends State<SignInScreen> {
                     }
                   } catch (error) {
                     // Tangani kesalahan lain yang tidak terkait dengan otentikasi
+
                     setState(() {
                       _errorMessage = error.toString();
                     });
@@ -177,7 +137,7 @@ class SignInScreenState extends State<SignInScreen> {
                     );
                   }
                 },
-                child: const Text(''),
+                child: const Text(' LOGIN'),
               ),
               const SizedBox(height: 32.0),
               TextButton(
@@ -190,6 +150,41 @@ class SignInScreenState extends State<SignInScreen> {
                 },
                 child: const Text('Don\'t have an account? Sign up'),
               ),
+              const SizedBox(height: 32.0),
+              const Text(
+                "--- Or Sign In With ---",
+                style: TextStyle(color: Colors.black54),
+              ),
+              const SizedBox(height: 32.0),
+              ValueListenableBuilder(
+                valueListenable: userCredential,
+                builder: (context, value, child) {
+                  return Center(
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(elevation: 5),
+                      onPressed: () async {
+                        userCredential.value = await signInWithGoogle();
+                        if (userCredential.value != null)
+                          print(userCredential.value.user!.email);
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (context) => HomeScreen()),
+                        );
+                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/google_icon.png',
+                          ),
+                          const Text('Sign in with Google')
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -197,7 +192,7 @@ class SignInScreenState extends State<SignInScreen> {
     );
   }
 
-// Fungsi untuk memeriksa validitas email
+  // Fungsi untuk memeriksa validitas email
   bool isValidEmail(String email) {
     String emailRegex =
         r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$";

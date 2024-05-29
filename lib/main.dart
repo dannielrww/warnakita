@@ -6,9 +6,6 @@ import 'package:warnakita/screens/home_screen.dart';
 import 'package:warnakita/screens/sign_in_screen.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-//email : kevinxd4256@mhs.mdp.ac.id
-//pass : NPM
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
@@ -32,7 +29,7 @@ class MyApp extends StatelessWidget {
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return const HomeScreen();
+            return HomeScreen();
           } else {
             return const SignInScreen();
           }
