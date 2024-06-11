@@ -1,29 +1,63 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:warnakita/screens/sign_in_screen.dart';
+import 'package:warnakita/screens/sign_up_screen.dart';
 
 void main() {
   runApp(HomeScreen());
 }
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
+
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: HomePage(),
+  State<StatefulWidget> createState()
+    => HomeScreenState();
+}
+
+class HomeScreenState extends State<HomeScreen>
+{
+    int pageIndex = 0;
+
+    @override
+    Widget build(BuildContext context) {
+
+     const List<Widget> navbarItems = [
+        NavigationDestination(icon: Icon(Icons.home), label: ''),
+        NavigationDestination(icon: Icon(Icons.add_box), label: ''),
+        NavigationDestination(icon: Icon(Icons.favorite), label: ''),
+        NavigationDestination(icon: Icon(Icons.person_outline), label: ''),
+      ];
+
+    void onIndexChanged(int index)
+    {
+      setState(() {
+        pageIndex = index;
+      });
+    }
+
+      NavigationBar navBar = new NavigationBar(destinations: navbarItems, onDestinationSelected: onIndexChanged, selectedIndex: pageIndex);
+
+      Widget page1 = HomePage();
+      Widget page2 = SignInScreen();
+      Widget page3 = HomePage();
+      Widget page4 = SignUpScreen();
+      var pages = [page1,page2,page3,page4];
+  
+  Widget getActivePage()
+  {
+    return pages[pageIndex];
+  }
+
+    return Scaffold(
+      body: getActivePage(),
+      bottomNavigationBar: navBar,
     );
   }
 }
 
 class HomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.purple.shade100,
-        elevation: 0,
-        toolbarHeight: 0, // Hides the AppBar
-      ),
-      backgroundColor: Colors.purple.shade100,
-      body: SafeArea(
+  
+  var homeScreenBody = SafeArea(
         child: Column(
           children: [
             SearchBar(),
@@ -43,8 +77,20 @@ class HomePage extends StatelessWidget {
             ),
           ],
         ),
+      );
+
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.purple.shade100,
+        elevation: 0,
+        toolbarHeight: 0, // Hides the AppBar
       ),
-      bottomNavigationBar: BottomNavBar(),
+      backgroundColor: Colors.purple.shade100,
+      body: homeScreenBody,
     );
   }
 }
@@ -109,37 +155,6 @@ class StoreCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class BottomNavBar extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return BottomNavigationBar(
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.home),
-          label: '',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.add_box),
-          label: '',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.favorite_border),
-          label: '',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.person_outline),
-          label: '',
-        ),
-      ],
-      backgroundColor: Colors.purple.shade100,
-      selectedItemColor: Colors.purple,
-      unselectedItemColor: Colors.grey,
-      showSelectedLabels: false,
-      showUnselectedLabels: false,
     );
   }
 }
