@@ -37,16 +37,17 @@ class HomeScreenState extends State<HomeScreen>
 
       NavigationBar navBar = new NavigationBar(destinations: navbarItems, onDestinationSelected: onIndexChanged, selectedIndex: pageIndex);
 
+      // TODO: Replace with real page
       Widget page1 = HomePage();
       Widget page2 = SignInScreen();
       Widget page3 = HomePage();
       Widget page4 = SignUpScreen();
       var pages = [page1,page2,page3,page4];
   
-  Widget getActivePage()
-  {
-    return pages[pageIndex];
-  }
+    Widget getActivePage()
+    {
+      return pages[pageIndex];
+    }
 
     return Scaffold(
       body: getActivePage(),
