@@ -30,6 +30,13 @@
             {
               "client_id": "206492858709-ik1k7ip0g0olmm4d06f95ue3nkh7j9ob.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "206492858709-826g43bf09sucdbc04i6ba1qao6qae8i.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.warnakita.RunnerTests"
+              }
             }
           ]
         }
