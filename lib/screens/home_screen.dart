@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:warnakita/screens/sign_in_screen.dart';
 import 'package:warnakita/screens/sign_up_screen.dart';
+import 'package:warnakita/screens/upload_screen.dart';
 
 void main() {
   runApp(HomeScreen());
@@ -39,7 +40,7 @@ class HomeScreenState extends State<HomeScreen>
 
       // TODO: Replace with real page
       Widget page1 = HomePage();
-      Widget page2 = SignInScreen();
+      Widget page2 = UploadScreen();
       Widget page3 = HomePage();
       Widget page4 = SignUpScreen();
       var pages = [page1,page2,page3,page4];
