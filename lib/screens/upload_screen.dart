@@ -42,7 +42,11 @@ class _PostingScreenState extends State<PostingScreen> {
   }
 
   Future<void> _submitData() async {
-    if (_image == null) return;
+    if (_image == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Harap melakukan Upload gambar')),
+      );
+    }
 
     final String name = _nameController.text;
     final String description = _descriptionController.text;
@@ -64,6 +68,10 @@ class _PostingScreenState extends State<PostingScreen> {
       setState(() {
         _image = null;
       });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Isi Field yang belum terisi ')),
+      );
     }
   }
 
@@ -81,7 +89,9 @@ class _PostingScreenState extends State<PostingScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Posting'),
+        backgroundColor: Colors.purple.shade100, // Warna latar belakang AppBar
       ),
+      backgroundColor: Colors.purple.shade100,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(

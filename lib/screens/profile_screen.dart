@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path/path.dart';
+import 'package:warnakita/screens/sign_in_screen.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -24,6 +25,8 @@ class _ProfilePageState extends State<ProfilePage> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _genderController = TextEditingController();
   final TextEditingController _statusController = TextEditingController();
+
+  late BuildContext scaffoldContext; // Variable to store context
 
   @override
   void initState() {
@@ -120,14 +123,30 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  Future<void> _logout() async {
+    await _auth.signOut();
+    Navigator.of(scaffoldContext).pushReplacement(
+      MaterialPageRoute(builder: (context) => SignInScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    scaffoldContext = context; // Store context during build
     return ScaffoldMessenger(
       key: _scaffoldMessengerKey,
       child: Scaffold(
         appBar: AppBar(
+          backgroundColor: Colors.purple.shade100,
           title: Text('Profile'),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.logout),
+              onPressed: _logout,
+            ),
+          ],
         ),
+        backgroundColor: Colors.purple.shade100,
         body: SingleChildScrollView(
           child: Padding(
             padding: const EdgeInsets.all(16.0),

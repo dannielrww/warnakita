@@ -27,7 +27,10 @@ class DefaultFirebaseOptions {
       case TargetPlatform.macOS:
         return macos;
       case TargetPlatform.windows:
-        return windows;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for windows - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -73,24 +76,12 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyDTp7nftJJ5zxNCVJIbP_IJfe61nLTkwr8',
-    appId: '1:206492858709:ios:879423a54d7d34158a17dc',
+    appId: '1:206492858709:ios:e3a17002dde329a28a17dc',
     messagingSenderId: '206492858709',
     projectId: 'warnakita-db',
     databaseURL: 'https://warnakita-db-default-rtdb.asia-southeast1.firebasedatabase.app',
     storageBucket: 'warnakita-db.appspot.com',
-    iosClientId: '206492858709-sfqemc89tuvahp1dmapud2jakj7p6mni.apps.googleusercontent.com',
-    iosBundleId: 'com.example.warnakita',
+    iosClientId: '206492858709-826g43bf09sucdbc04i6ba1qao6qae8i.apps.googleusercontent.com',
+    iosBundleId: 'com.example.warnakita.RunnerTests',
   );
-
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyA3FsIFqHEYLhv5Sa0YG6OjfnoETk3kkMc',
-    appId: '1:206492858709:web:782f322f65ab75698a17dc',
-    messagingSenderId: '206492858709',
-    projectId: 'warnakita-db',
-    authDomain: 'warnakita-db.firebaseapp.com',
-    databaseURL: 'https://warnakita-db-default-rtdb.asia-southeast1.firebasedatabase.app',
-    storageBucket: 'warnakita-db.appspot.com',
-    measurementId: 'G-ZS7XZPGH14',
-  );
-
 }

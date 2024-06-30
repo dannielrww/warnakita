@@ -4,6 +4,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:warnakita/screens/profile_screen.dart';
+import 'package:warnakita/screens/sign_in_screen.dart';
+import 'package:warnakita/screens/sign_up_screen.dart';
+import 'package:warnakita/screens/upload_screen.dart';
+import 'package:warnakita/screens/favorites.dart';
+
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,7 +52,7 @@ class HomeScreenState extends State<HomeScreen> {
     // Pages
     Widget page1 = HomePage();
     Widget page2 = PostingScreen();
-    Widget page3 = HomePage();
+    Widget page3 = Favorites();
     Widget page4 = ProfilePage();
     var pages = [page1, page2, page3, page4];
 
@@ -58,7 +67,20 @@ class HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  String searchQuery = '';
+
+  void updateSearchQuery(String newQuery) {
+    setState(() {
+      searchQuery = newQuery;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,7 +93,9 @@ class HomePage extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            SearchBar(),
+            SearchBar(
+              onChanged: updateSearchQuery,
+            ),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
                 stream:
@@ -84,11 +108,19 @@ class HomePage extends StatelessWidget {
                     return Center(child: Text('Error: ${snapshot.error}'));
                   }
                   final stores = snapshot.data!.docs;
+                  final filteredStores = stores.where((store) {
+                    return store['name']
+                        .toString()
+                        .toLowerCase()
+                        .contains(searchQuery.toLowerCase());
+                  }).toList();
+
                   return ListView.builder(
-                    itemCount: stores.length,
+                    itemCount: filteredStores.length,
                     itemBuilder: (context, index) {
-                      final store = stores[index];
+                      final store = filteredStores[index];
                       return StoreCard(
+                        storeId: store.id,
                         imagePath: store['image_url'],
                         storeName: store['name'],
                       );
@@ -105,11 +137,16 @@ class HomePage extends StatelessWidget {
 }
 
 class SearchBar extends StatelessWidget {
+  final ValueChanged<String> onChanged;
+
+  SearchBar({required this.onChanged});
+
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: TextField(
+        onChanged: onChanged,
         decoration: InputDecoration(
           hintText: 'Search',
           filled: true,
@@ -125,11 +162,75 @@ class SearchBar extends StatelessWidget {
   }
 }
 
-class StoreCard extends StatelessWidget {
+class StoreCard extends StatefulWidget {
+  final String storeId;
   final String imagePath;
   final String storeName;
 
-  StoreCard({required this.imagePath, required this.storeName});
+  StoreCard({
+    required this.storeId,
+    required this.imagePath,
+    required this.storeName,
+  });
+
+  @override
+  _StoreCardState createState() => _StoreCardState();
+}
+
+class _StoreCardState extends State<StoreCard> {
+  bool isFavorite = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfFavorite();
+  }
+
+  Future<void> _checkIfFavorite() async {
+    var snapshot = await FirebaseFirestore.instance
+        .collection('favorites')
+        .where('storeId', isEqualTo: widget.storeId)
+        .get();
+    if (snapshot.docs.isNotEmpty && mounted) {
+      setState(() {
+        isFavorite = true;
+      });
+    }
+  }
+
+  Future<void> _toggleFavorite(BuildContext context) async {
+    setState(() {
+      isFavorite = !isFavorite;
+    });
+
+    if (isFavorite) {
+      // Save favorite data to Firestore
+      await FirebaseFirestore.instance.collection('favorites').add({
+        'storeId': widget.storeId,
+        'image_url': widget.imagePath,
+        'name': widget.storeName,
+      });
+
+      // Show snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Toko ditambahkan ke favorite')),
+      );
+    } else {
+      // Remove favorite data from Firestore
+      var snapshot = await FirebaseFirestore.instance
+          .collection('favorites')
+          .where('storeId', isEqualTo: widget.storeId)
+          .get();
+      for (var doc in snapshot.docs) {
+        await doc.reference.delete();
+      }
+
+      // Show snackbar
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Toko dihapus dari favorite')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -140,157 +241,33 @@ class StoreCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.network(imagePath),
+            Image.network(widget.imagePath),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
-                storeName,
+                widget.storeName,
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                 ),
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8.0),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Icon(Icons.shopping_cart_outlined),
-                  Icon(Icons.favorite_border),
+                  IconButton(
+                    icon: Icon(
+                        isFavorite ? Icons.favorite : Icons.favorite_border,
+                        color: isFavorite ? Colors.red : null),
+                    onPressed: () => _toggleFavorite(context),
+                  ),
                 ],
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class PostingScreen extends StatefulWidget {
-  @override
-  _PostingScreenState createState() => _PostingScreenState();
-}
-
-class _PostingScreenState extends State<PostingScreen> {
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _locationController = TextEditingController();
-  File? _image;
-  final ImagePicker _picker = ImagePicker();
-
-  Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-      });
-    }
-  }
-
-  Future<void> _submitData() async {
-    if (_image == null) return;
-
-    final String name = _nameController.text;
-    final String description = _descriptionController.text;
-    final String location = _locationController.text;
-
-    if (name.isNotEmpty && description.isNotEmpty && location.isNotEmpty) {
-      String imageUrl = await _uploadImage(_image!);
-
-      await FirebaseFirestore.instance.collection('posts').add({
-        'name': name,
-        'description': description,
-        'location': location,
-        'image_url': imageUrl,
-      });
-
-      _nameController.clear();
-      _descriptionController.clear();
-      _locationController.clear();
-      setState(() {
-        _image = null;
-      });
-    }
-  }
-
-  Future<String> _uploadImage(File image) async {
-    String fileName = image.path.split('/').last;
-    Reference storageReference =
-        FirebaseStorage.instance.ref().child('uploads/$fileName');
-    UploadTask uploadTask = storageReference.putFile(image);
-    TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() => null);
-    return await taskSnapshot.ref.getDownloadURL();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Posting'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            GestureDetector(
-              onTap: _pickImage,
-              child: Container(
-                width: double.infinity,
-                height: 200,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: _image != null
-                    ? Image.file(_image!, fit: BoxFit.cover)
-                    : Icon(Icons.add_a_photo,
-                        color: Colors.grey[700], size: 50),
-              ),
-            ),
-            SizedBox(height: 16.0),
-            TextField(
-              controller: _nameController,
-              decoration: InputDecoration(
-                labelText: 'Nama',
-              ),
-            ),
-            SizedBox(height: 16.0),
-            TextField(
-              controller: _descriptionController,
-              decoration: InputDecoration(
-                labelText: 'Deskripsi',
-              ),
-            ),
-            SizedBox(height: 16.0),
-            TextField(
-              controller: _locationController,
-              decoration: InputDecoration(
-                labelText: 'Lokasi Toko',
-              ),
-            ),
-            SizedBox(height: 32.0),
-            ElevatedButton(
-              onPressed: _submitData,
-              child: Text('POSTING'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class ProfilePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Profile'),
-      ),
-      body: Center(
-        child: Text('Profile Page'),
       ),
     );
   }
